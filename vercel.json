@@ -14,24 +14,9 @@
                     "config/**"
                 ]
             }
-        },
-        {
-            "src": "frontend/package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dist"
-            }
         }
     ],
     "routes": [
-        {
-            "src": "/shop(.*)",
-            "dest": "/frontend/index.html"
-        },
-        {
-            "src": "/assets/(.*)",
-            "dest": "/frontend/assets/$1"
-        },
         {
             "src": "/(.*)",
             "dest": "/server.js"
