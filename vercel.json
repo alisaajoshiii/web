@@ -3,7 +3,17 @@
     "builds": [
         {
             "src": "server.js",
-            "use": "@vercel/node"
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "views/**",
+                    "public/**",
+                    "database.sqlite",
+                    "models/**",
+                    "routes/**",
+                    "config/**"
+                ]
+            }
         }
     ],
     "routes": [

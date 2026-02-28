@@ -16,6 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // EJS Layouts
 app.use(expressLayouts);
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'partials/layout');
 
 // Session config
