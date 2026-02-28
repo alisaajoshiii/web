@@ -1,0 +1,59 @@
+<div class="top-bar py-1 d-none d-md-block">
+  <div class="container d-flex justify-content-end">
+    <a href="/shop">SAVE MORE ON APP</a>
+    <a href="/contact">DONATE TO AURA</a>
+    <a href="/contact">CUSTOMER CARE</a>
+    <% if (user) { %>
+      <% if (user.role==='admin' ) { %>
+        <a href="/admin">ADMIN DASHBOARD</a>
+        <% } %>
+          <a href="/auth/profile">PROFILE (<%= user.name %>)</a>
+          <a href="/auth/logout" class="text-danger">LOGOUT</a>
+          <% } else { %>
+            <a href="/auth/login">LOGIN</a>
+            <a href="/auth/register">SIGN UP</a>
+            <% } %>
+  </div>
+</div>
+
+<header class="daraz-header sticky-top">
+  <div class="container d-flex align-items-center justify-content-between">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="/images/logo.png" alt="Aura Sissies Logo" width="45" height="45" class="me-2 rounded-circle"
+        style="object-fit: cover;">
+      <span class="d-none d-md-inline">Aura Sissies</span>
+    </a>
+
+    <div class="daraz-search-bar flex-grow-1 mx-3 mx-md-5">
+      <form action="/shop" method="GET" class="d-flex w-100 position-relative">
+        <input type="text" name="search" placeholder="Search in Aura Sissies" required>
+        <button type="submit" class="search-btn">🔍</button>
+      </form>
+    </div>
+
+    <a href="/shop/cart" class="cart-icon me-2">
+      🛒
+      <span class="cart-badge">
+        <%= cartCount %>
+      </span>
+    </a>
+  </div>
+</header>
+<nav class="bg-white shadow-sm py-2 d-none d-md-block">
+  <div class="container">
+    <ul class="nav">
+      <li class="nav-item">
+        <a class="nav-link text-dark fw-bold" href="/shop">ALL CATEGORIES</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="/shop?category=Bouquet">BOUQUETS</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="/shop?category=Keyring">KEYRINGS</a>
+      </li>
+      <li class="nav-item ms-auto">
+        <a class="nav-link text-success fw-bold" href="/game">🎮 PLAY & EARN GEMS</a>
+      </li>
+    </ul>
+  </div>
+</nav>

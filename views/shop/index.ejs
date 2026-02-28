@@ -1,0 +1,52 @@
+<h2>Shop Products</h2>
+<form action="/shop" method="GET" class="mb-4">
+  <div class="row">
+    <div class="col-sm-8 mb-2">
+      <input type="text" name="search" class="form-control" placeholder="Search products..."
+        value="<%= search || '' %>">
+    </div>
+    <div class="col-sm-2 mb-2">
+      <select name="category" class="form-select">
+        <option value="">All Categories</option>
+        <option value="Bouquet">Bouquet</option>
+        <option value="Single Flowers">Single Flowers</option>
+        <option value="Keyring">Keyring</option>
+      </select>
+    </div>
+    <div class="col-sm-2 mb-2">
+      <button class="btn btn-outline-secondary w-100" type="submit">Filter/Search</button>
+    </div>
+  </div>
+</form>
+
+<div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+  <% if (products.length===0) { %>
+    <p>No products found.</p>
+    <% } %>
+      <% products.forEach(product=> { %>
+        <div class="col">
+          <a href="/shop/product/<%= product.id %>" class="text-decoration-none">
+            <div class="daraz-card">
+              <img src="/images/products/<%= product.image %>" class="daraz-card-img" alt="<%= product.name %>">
+              <div class="daraz-card-body">
+                <div class="daraz-card-title">
+                  <%= product.name %>
+                </div>
+                <div class="daraz-card-price">Rs. <%= product.price %>
+                </div>
+                <% if (product.price> 100) { %>
+                  <div class="daraz-card-old-price">Rs. <%= Number(product.price) + 50 %>
+                  </div>
+                  <% } %>
+                    <div class="daraz-card-rating mt-2">
+                      ★★★★★ <span class="text-muted">(12)</span>
+                    </div>
+                    <div style="font-size: 11px; margin-top: 5px;" class="text-muted">
+                      <%= product.category %>
+                    </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        <% }) %>
+</div>

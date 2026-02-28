@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2 class="mb-4" style="color: #997CA6;">Everything Aesthetic 🌸</h2>
+<div class="row">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 mb-4" style="background-color: #F5F0F6;">
+            <h5>Categories</h5>
+            <ul class="list-unstyled">
+                <li><a href="#" class="text-decoration-none" style="color: #4A4A4A;">All Items</a></li>
+                <li><a href="#" class="text-decoration-none" style="color: #4A4A4A;">Bouquet</a></li>
+                <li><a href="#" class="text-decoration-none" style="color: #4A4A4A;">Plushies</a></li>
+                <li><a href="#" class="text-decoration-none" style="color: #4A4A4A;">Apparel</a></li>
+                <li><a href="#" class="text-decoration-none" style="color: #4A4A4A;">Keyring</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            {% for product in products %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm daraz-card">
+                    <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
+                        class="card-img-top daraz-card-img" alt="{{ product.name }}">
+                    <div class="card-body daraz-card-body">
+                        <h5 class="daraz-card-title">{{ product.name }}</h5>
+                        <p class="small text-muted mb-2">{{ product.description }}</p>
+                        <p class="daraz-card-price mt-auto">Rs. {{ "%.0f"|format(product.price) }}</p>
+                        <button class="btn w-100 mt-2" style="background-color: #D4C4DD; color: white;">Add to
+                            Cart</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination controls -->
+        <nav aria-label="Page navigation" class="mt-5">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('shop', page=current_page-1) }}" tabindex="-1"
+                        aria-disabled="true">Previous</a>
+                </li>
+                <li class="page-item active"><a class="page-link"
+                        style="background-color: #C4AED0; border-color: #C4AED0;" href="#">{{ current_page }}</a></li>
+                <li class="page-item {% if not has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('shop', page=current_page+1) }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+{% endblock %}

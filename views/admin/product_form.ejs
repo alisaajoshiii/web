@@ -1,0 +1,47 @@
+<div class="row mb-4">
+  <div class="col-12 border-bottom pb-2">
+    <h2><%= product ? 'Edit Product' : 'Add New Product' %></h2>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-3">
+    <div class="list-group">
+      <a href="/admin" class="list-group-item list-group-item-action">Dashboard Summary</a>
+      <a href="/admin/products" class="list-group-item list-group-item-action active">Manage Products</a>
+      <a href="/admin/orders" class="list-group-item list-group-item-action">Manage Orders</a>
+    </div>
+  </div>
+  <div class="col-md-9">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form action="<%= product ? '/admin/products/edit/' + product.id : '/admin/products' %>" method="POST" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label class="form-label">Product Name</label>
+            <input type="text" name="name" class="form-control" value="<%= product ? product.name : '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <input type="text" name="category" class="form-control" value="<%= product ? product.category : '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Price (Rs)</label>
+            <input type="number" step="0.01" name="price" class="form-control" value="<%= product ? product.price : '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="4"><%= product ? product.description : '' %></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Product Image</label>
+            <input type="file" name="image" class="form-control" accept="image/*" <%= product ? '' : 'required' %>>
+            <% if (product && product.image) { %>
+              <div class="mt-2">Current Image: <img src="/images/products/<%= product.image %>" width="80"></div>
+            <% } %>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Product</button>
+          <a href="/admin/products" class="btn btn-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,329 @@
+{% extends "layout.html" %}
+{% block content %}
+<style>
+    .game-board {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .grid {
+        display: flex;
+        flex-wrap: wrap;
+        width: 320px;
+        height: 320px;
+        background-color: rgba(255, 255, 255, 0.4);
+        border-radius: 10px;
+        margin: 0 auto;
+        padding: 5px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .grid div {
+        width: 38.7px;
+        height: 38.7px;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        cursor: pointer;
+        user-select: none;
+        border-radius: 5px;
+        transition: transform 0.2s;
+    }
+
+    .grid div:hover {
+        background-color: rgba(255, 255, 255, 0.6);
+        transform: scale(1.1);
+    }
+</style>
+
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-8 text-center game-board">
+        <h2 style="color: #997CA6; font-weight: bold;">Play & Earn Gems! 💎</h2>
+        <p class="lead" style="color: #6c757d;">Match 3 or more cute items. Score <strong>200</strong> to win 5 Aura
+            Gems!</p>
+
+        <div class="card shadow-sm border-0 my-3 w-100" style="background: #EAE0EB; max-width: 400px;">
+            <div class="card-body py-4">
+                <h3 class="mb-3" style="color: #4A4A4A; font-weight: 600;">Score: <span id="scoreDisplay"
+                        style="color: #997CA6;">0</span></h3>
+
+                <div class="grid"></div>
+
+                <div id="statusMsg" class="alert mt-4 d-none"></div>
+            </div>
+        </div>
+
+        {% if not user %}
+        <div class="alert alert-warning mt-2 w-100"
+            style="max-width: 400px; background-color: #fff3cd; color: #856404;">
+            <strong>Note:</strong> You must be <a href="{{ url_for('login') }}"
+                style="color: #997CA6; font-weight:bold;">logged in</a> to save your gems!
+        </div>
+        {% else %}
+        <div class="mt-2 text-center w-100">
+            <h4 style="color: #4A4A4A;">Your Gems: <span id="totalGems" class="badge rounded-pill"
+                    style="background-color: #C4AED0; padding: 10px 15px;">
+                    {{ user.gems }} 💎
+                </span></h4>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const grid = document.querySelector('.grid');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const statusMsg = document.getElementById('statusMsg');
+    const totalGems = document.getElementById('totalGems');
+    const width = 8;
+    const squares = [];
+    let score = 0;
+    let isPlaying = true;
+    let gemsEarned = false;
+
+    // Aesthetic Crochet-themed emojis!
+    const candyColors = ['🧶', '🌸', '🍓', '🧸', '🦋', '🍬'];
+
+    // Create board
+    function createBoard() {
+        for (let i = 0; i < width * width; i++) {
+            const square = document.createElement('div');
+            square.setAttribute('draggable', true);
+            square.setAttribute('id', i);
+            let randomColor = Math.floor(Math.random() * candyColors.length);
+            square.innerHTML = candyColors[randomColor];
+            grid.appendChild(square);
+            squares.push(square);
+        }
+    }
+    createBoard();
+
+    let colorBeingDragged;
+    let colorBeingReplaced;
+    let squareIdBeingDragged;
+    let squareIdBeingReplaced;
+
+    squares.forEach(square => square.addEventListener('dragstart', dragStart));
+    squares.forEach(square => square.addEventListener('dragend', dragEnd));
+    squares.forEach(square => square.addEventListener('dragover', dragOver));
+    squares.forEach(square => square.addEventListener('dragenter', dragEnter));
+    squares.forEach(square => square.addEventListener('dragleave', dragLeave));
+    squares.forEach(square => square.addEventListener('drop', dragDrop));
+
+    // Touch support for mobile!
+    let touchSource = null;
+    squares.forEach(square => {
+        square.addEventListener('touchstart', (e) => {
+            if (!isPlaying) return;
+            touchSource = e.target;
+            dragStart.call(e.target);
+            e.preventDefault();
+        }, { passive: false });
+
+        square.addEventListener('touchmove', (e) => {
+            if (!isPlaying) return;
+            e.preventDefault();
+        }, { passive: false });
+
+        square.addEventListener('touchend', (e) => {
+            if (!isPlaying || !touchSource) return;
+            const touch = e.changedTouches[0];
+            const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+
+            if (dropTarget && dropTarget.hasAttribute('draggable')) {
+                colorBeingReplaced = dropTarget.innerHTML;
+                squareIdBeingReplaced = parseInt(dropTarget.id);
+                dropTarget.innerHTML = colorBeingDragged;
+                squares[squareIdBeingDragged].innerHTML = colorBeingReplaced;
+
+                let validMoves = [
+                    squareIdBeingDragged - 1,
+                    squareIdBeingDragged - width,
+                    squareIdBeingDragged + 1,
+                    squareIdBeingDragged + width
+                ];
+
+                if (squareIdBeingDragged % width === 0) validMoves = validMoves.filter(m => m !== squareIdBeingDragged - 1);
+                if (squareIdBeingDragged % width === width - 1) validMoves = validMoves.filter(m => m !== squareIdBeingDragged + 1);
+
+                let validMove = validMoves.includes(squareIdBeingReplaced);
+
+                if (squareIdBeingReplaced !== undefined && squareIdBeingReplaced !== null && validMove) {
+                    squareIdBeingReplaced = null;
+                } else if (squareIdBeingReplaced !== undefined && squareIdBeingReplaced !== null && !validMove) {
+                    squares[squareIdBeingReplaced].innerHTML = colorBeingReplaced;
+                    squares[squareIdBeingDragged].innerHTML = colorBeingDragged;
+                }
+            } else {
+                squares[squareIdBeingDragged].innerHTML = colorBeingDragged;
+            }
+            touchSource = null;
+        });
+    });
+
+    function dragStart() {
+        if (!isPlaying) return;
+        colorBeingDragged = this.innerHTML;
+        squareIdBeingDragged = parseInt(this.id);
+    }
+
+    function dragOver(e) { e.preventDefault(); }
+    function dragEnter(e) { e.preventDefault(); }
+    function dragLeave() { }
+
+    function dragDrop() {
+        if (!isPlaying) return;
+        colorBeingReplaced = this.innerHTML;
+        squareIdBeingReplaced = parseInt(this.id);
+        this.innerHTML = colorBeingDragged;
+        squares[squareIdBeingDragged].innerHTML = colorBeingReplaced;
+    }
+
+    function dragEnd() {
+        if (!isPlaying) return;
+        let validMoves = [
+            squareIdBeingDragged - 1,
+            squareIdBeingDragged - width,
+            squareIdBeingDragged + 1,
+            squareIdBeingDragged + width
+        ];
+
+        if (squareIdBeingDragged % width === 0) validMoves = validMoves.filter(m => m !== squareIdBeingDragged - 1);
+        if (squareIdBeingDragged % width === width - 1) validMoves = validMoves.filter(m => m !== squareIdBeingDragged + 1);
+
+        let validMove = validMoves.includes(squareIdBeingReplaced);
+
+        if (squareIdBeingReplaced !== null && squareIdBeingReplaced !== undefined && validMove) {
+            squareIdBeingReplaced = null;
+        } else if (squareIdBeingReplaced !== null && squareIdBeingReplaced !== undefined && !validMove) {
+            squares[squareIdBeingReplaced].innerHTML = colorBeingReplaced;
+            squares[squareIdBeingDragged].innerHTML = colorBeingDragged;
+        } else {
+            squares[squareIdBeingDragged].innerHTML = colorBeingDragged;
+        }
+    }
+
+    function moveDown() {
+        for (let c = 0; c < width; c++) {
+            for (let r = width - 1; r >= 0; r--) {
+                if (squares[r * width + c].innerHTML === '') {
+                    let rAbove = r - 1;
+                    while (rAbove >= 0 && squares[rAbove * width + c].innerHTML === '') {
+                        rAbove--;
+                    }
+                    if (rAbove >= 0) {
+                        squares[r * width + c].innerHTML = squares[rAbove * width + c].innerHTML;
+                        squares[rAbove * width + c].innerHTML = '';
+                    } else {
+                        let randomColor = Math.floor(Math.random() * candyColors.length);
+                        squares[r * width + c].innerHTML = candyColors[randomColor];
+                    }
+                }
+            }
+        }
+    }
+
+    function checkRowForFour() {
+        for (let i = 0; i < 60; i++) {
+            let rowOfFour = [i, i + 1, i + 2, i + 3];
+            let decidedColor = squares[i].innerHTML;
+            const isBlank = squares[i].innerHTML === '';
+            const notValid = [5, 6, 7, 13, 14, 15, 21, 22, 23, 29, 30, 31, 37, 38, 39, 45, 46, 47, 53, 54, 55, 61, 62, 63];
+            if (notValid.includes(i)) continue;
+
+            if (rowOfFour.every(index => squares[index].innerHTML === decidedColor && !isBlank)) {
+                score += 4;
+                rowOfFour.forEach(index => { squares[index].innerHTML = ''; });
+            }
+        }
+    }
+
+    function checkColumnForFour() {
+        for (let i = 0; i < 39; i++) {
+            let columnOfFour = [i, i + width, i + width * 2, i + width * 3];
+            let decidedColor = squares[i].innerHTML;
+            const isBlank = squares[i].innerHTML === '';
+
+            if (columnOfFour.every(index => squares[index].innerHTML === decidedColor && !isBlank)) {
+                score += 4;
+                columnOfFour.forEach(index => { squares[index].innerHTML = ''; });
+            }
+        }
+    }
+
+    function checkRowForThree() {
+        for (let i = 0; i < 61; i++) {
+            let rowOfThree = [i, i + 1, i + 2];
+            let decidedColor = squares[i].innerHTML;
+            const isBlank = squares[i].innerHTML === '';
+            const notValid = [6, 7, 14, 15, 22, 23, 30, 31, 38, 39, 46, 47, 54, 55, 62, 63];
+            if (notValid.includes(i)) continue;
+
+            if (rowOfThree.every(index => squares[index].innerHTML === decidedColor && !isBlank)) {
+                score += 3;
+                rowOfThree.forEach(index => { squares[index].innerHTML = ''; });
+            }
+        }
+    }
+
+    function checkColumnForThree() {
+        for (let i = 0; i < 47; i++) {
+            let columnOfThree = [i, i + width, i + width * 2];
+            let decidedColor = squares[i].innerHTML;
+            const isBlank = squares[i].innerHTML === '';
+
+            if (columnOfThree.every(index => squares[index].innerHTML === decidedColor && !isBlank)) {
+                score += 3;
+                columnOfThree.forEach(index => { squares[index].innerHTML = ''; });
+            }
+        }
+    }
+
+    function checkWinCondition() {
+        scoreDisplay.innerText = score;
+        if (score >= 200 && !gemsEarned) {
+            gemsEarned = true;
+            statusMsg.classList.remove('d-none');
+            statusMsg.classList.remove('alert-danger');
+            statusMsg.classList.add('alert-success');
+            statusMsg.innerText = "Processing reward...";
+
+            fetch("{{ url_for('game_earn') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        statusMsg.innerText = "You scored 200! 5 Gems have been added! 💎";
+                        if (totalGems) totalGems.innerText = data.gems + " 💎";
+                    } else {
+                        statusMsg.classList.remove('alert-success');
+                        statusMsg.classList.add('alert-danger');
+                        statusMsg.innerText = "You scored 200! Please log in to save your gems.";
+                    }
+                    setTimeout(() => {
+                        score = 0;
+                        scoreDisplay.innerText = "0";
+                        gemsEarned = false;
+                        statusMsg.classList.add('d-none');
+                    }, 5000);
+                });
+        }
+    }
+
+    window.setInterval(function () {
+        if (!isPlaying) return;
+        checkRowForFour();
+        checkColumnForFour();
+        checkRowForThree();
+        checkColumnForThree();
+        moveDown();
+        checkWinCondition();
+    }, 150);
+</script>
+{% endblock %}

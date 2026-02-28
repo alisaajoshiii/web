@@ -1,0 +1,42 @@
+<div class="row mb-4">
+  <div class="col-12 border-bottom pb-2">
+    <h2>Manage Orders</h2>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-3">
+    <div class="list-group">
+      <a href="/admin" class="list-group-item list-group-item-action">Dashboard Summary</a>
+      <a href="/admin/products" class="list-group-item list-group-item-action">Manage Products</a>
+      <a href="/admin/orders" class="list-group-item list-group-item-action active">Manage Orders</a>
+    </div>
+  </div>
+  <div class="col-md-9">
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover mt-2">
+        <thead class="table-light">
+           <tr>
+             <th>ID</th>
+             <th>Customer</th>
+             <th>Date</th>
+             <th>Total Amount</th>
+             <th>Payment</th>
+             <th>Status</th>
+           </tr>
+        </thead>
+        <tbody>
+           <% orders.forEach(order => { %>
+             <tr>
+               <td>#<%= order.id %></td>
+               <td><%= order.User.name %></td>
+               <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+               <td>Rs <%= order.totalAmount %></td>
+               <td><%= order.paymentStatus %></td>
+               <td><span class="badge bg-warning text-dark"><%= order.status %></span></td>
+             </tr>
+           <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
