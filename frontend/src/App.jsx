@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { products as customProducts } from './products'
 import './App.css'
 
 function App() {
@@ -6,16 +7,23 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Attempt to fetch from backend first, if fails, fallback to local static data
     fetch('/api/products')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('API down');
+        return res.json();
+      })
       .then(data => {
-        if (data.success) {
+        if (data.success && data.data && data.data.length > 0) {
           setProducts(data.data)
+        } else {
+          setProducts(customProducts) // Fallback for Vercel
         }
         setLoading(false)
       })
       .catch(err => {
-        console.error('Error fetching products:', err)
+        console.warn('Backend API not responding, using fallback offline data:', err);
+        setProducts(customProducts) // Fallback for Vercel
         setLoading(false)
       })
   }, [])
