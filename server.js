@@ -31,7 +31,9 @@ app.use(session({
     store: sessionStore
 }));
 
-sessionStore.sync();
+sessionStore.sync().catch(err => {
+    console.error('Session Store sync error:', err);
+});
 
 // Global variables for templates
 app.use((req, res, next) => {
