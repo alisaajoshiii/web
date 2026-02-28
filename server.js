@@ -48,10 +48,14 @@ app.use('/shop', require('./routes/shop'));
 app.use('/api', require('./routes/api'));
 
 // Start server and sync DB
-sequelize.sync({ alter: true }).then(() => {
-    app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
-    });
+sequelize.sync({ alter: !process.env.VERCEL }).then(() => {
+    if (process.env.NODE_ENV !== 'production') {
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+        });
+    }
 }).catch(err => {
     console.log('Database sync error:', err);
 });
+
+module.exports = app;
